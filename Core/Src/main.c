@@ -131,6 +131,10 @@ int main(void)
   MX_USART6_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
+  HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_SET);
+  DDSend(1,2000000,6,150);
+  HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_RESET);
+  DDSend(0,2000000,6,150);
 
   /* USER CODE END 2 */
 
@@ -141,8 +145,19 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_1);
-	  HAL_Delay(200);
+//	  HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_1);
+//	  HAL_Delay(200);
+//	  printf("dds test\r\n");
+
+
+	  DACAI_SEND(SwitchScreen,0);
+	  HAL_Delay(1000);
+	  DACAI_SEND(SwitchScreen,1);
+	  HAL_Delay(1000);
+	  DACAI_SEND(SwitchScreen,2);
+	  HAL_Delay(1000);
+	  DACAI_SEND(SwitchScreen,3);
+
 //	  CMD_SEND(SwitchScreen,0);
 //	  HAL_Delay(1000);
 //	  CMD_SEND(SwitchScreen,1);

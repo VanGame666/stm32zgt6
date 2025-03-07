@@ -10,8 +10,8 @@
 #include "SoftwareCRC.h"
 
 #define BUF_SIZE 128
-#define CMD_SEND(command, ...) CMD_Send(command,##__VA_ARGS__, 0xFFFF)
-#define URTSEND huart1
+#define DACAI_SEND(command, ...) Dacai_Send(command,##__VA_ARGS__, 0xFFFF)
+#define URTSEND huart6
 #define SPISEND hspi2
 
 
