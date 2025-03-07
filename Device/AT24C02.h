@@ -13,27 +13,27 @@
 
 /*! -------------------------------------------------------------------------- */
 /*! Public test functions prototype */
-#define AT24CXX_BUFF_SIZE  (128)
+#define AT24CXX_BUFF_SIZE  128
 
 #define AT24CXX_Write_ADDR 0xA0
 #define AT24CXX_Read_ADDR  0xA1
 
 
 #define FaultHeader_START 0
-#define FaultRecord_START 16
+#define FaultRecord_START 12
 #define FaultRecord_END 128
 
 
  extern uint8_t AT24CXX_ReadBuff[];
  extern uint8_t AT24CXX_WriteBuff[];
 
- typedef struct{		//12bytes
+ typedef struct{
  	uint8_t hour;
  	uint8_t min;
  	uint8_t year;
  	uint8_t month;
  	uint8_t day;
- }Time_t;
+ }TimeTypeDef;
 
 
 typedef struct{		//12bytes
@@ -43,7 +43,7 @@ typedef struct{		//12bytes
 	uint16_t read_addr;
 	uint16_t write_addr;
 	uint16_t CRCheck;
-}FaultHeader_t;
+}FaultHeaderTypeDef;
 
 typedef struct{  //32bytes
 	uint16_t freq;
@@ -65,12 +65,12 @@ typedef struct{  //32bytes
 	uint8_t adc3_err_code;
 	uint8_t adc4_err_code;
 	uint8_t adc5_err_code;
-}FaultRecord_t;
+}FaultRecordTypeDef;
 
-extern FaultHeader_t FaultHeader;
-extern FaultRecord_t FaultRecord;
+extern FaultHeaderTypeDef FaultHeader;
+extern FaultRecordTypeDef FaultRecord;
 
-extern void write_fault_header(FaultHeader_t* header);
+extern void write_fault_header(FaultHeaderTypeDef* header);
 extern uint16_t time_code(uint8_t hour,uint8_t min);
 extern uint16_t data_code(uint8_t year,uint8_t month,uint8_t day);
 

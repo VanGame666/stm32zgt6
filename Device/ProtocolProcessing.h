@@ -38,8 +38,8 @@ typedef enum{
 	 ReadButtonStatus = 0xB111,
 	 SetButtonStatus = 0xB110,
 	 SwitchScreen = 0xB100,
-}CmdTypeDef;
-extern CmdTypeDef Cmd;
+}CmdSlectTypeDef;
+extern CmdSlectTypeDef Cmd;
 
 /* Send link selection */
 typedef enum{
@@ -59,12 +59,10 @@ extern CheckSlectTypeDef CheckSlect;
 
 
 
-void instruction_decode(void);
-void instruction_code(void);
+void Daicai_Decode(void);
+void DacaiSend(uint16_t command, ...);
 
-
-extern void DacaiSend(uint16_t command, ...);
-extern void DDSend(uint8_t enable,uint32_t frequecy,uint8_t channel, float phase);
+void DDSend(uint8_t enable,uint32_t frequecy,uint8_t channel, float phase);
 void PConectProcess(void);
 
 

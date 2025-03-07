@@ -49,10 +49,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint8_t key_flag = 0;
 uint8_t uart_flag = 0;
 
-extern PConectTypeDef PConect;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -77,7 +75,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	{
 		for(int temp = 65536*50;temp != 0;temp--);
 		HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_2);
-		key_flag = 1;
 	}
 }
 
@@ -88,7 +85,6 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     {
     	rx_num = Size;
     	uart_flag = 1;
-    	HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_2);
         HAL_UARTEx_ReceiveToIdle_DMA(&huart1,rx_buffer,BUF_SIZE);
         __HAL_DMA_DISABLE_IT(&hdma_usart1_rx,DMA_IT_HT);
     }
@@ -131,11 +127,16 @@ int main(void)
   MX_USART6_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_SET);
-  DDSend(1,2000000,6,150);
-  HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_RESET);
-  DDSend(0,2000000,6,150);
+  HAL_UARTEx_ReceiveToIdle_DMA(&huart1,rx_buffer,BUF_SIZE);
 
+
+  	HAL_GPIO_WritePin(I2C1_CS_GPIO_Port,I2C1_CS_Pin,GPIO_PIN_SET);
+  	write_fault_header(&FaultHeader);
+
+
+  	HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_SET);
+  	DDSend(1,100,6,150);
+  	printf("dds send\r\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -145,12 +146,16 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//	  HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_1);
-//	  HAL_Delay(200);
+	  HAL_GPIO_TogglePin(GPIOF,GPIO_PIN_13);
+	  HAL_Delay(500);
 //	  printf("dds test\r\n");
-	  HAL_Delay(1000);
-	  DDSend(1,1000000,6,150);
-	  HAL_Delay(1000);
+//	  HAL_Delay(1000);
+//	  DDSend(1,1000000,6,150);
+//	  HAL_Delay(1000);
+
+
+
+
 
 //	  DACAI_SEND(SwitchScreen,0);
 //	  HAL_Delay(1000);
@@ -168,12 +173,6 @@ int main(void)
 		  PConectProcess();
 	  }
 
-
-
-	  if(key_flag == 1)
-	  {
-		  key_flag = 0;
-	  }
   }
   /* USER CODE END 3 */
 }

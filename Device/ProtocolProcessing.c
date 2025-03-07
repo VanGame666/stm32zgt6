@@ -14,15 +14,14 @@ uint8_t dacai_head[] = {0xEE};
 uint8_t dacai_tail[] = {0xFF,0xFC,0xFF,0xFF};
 
 uint8_t pc_head[] = {0x5A,0xA5};
-uint8_t pc_tail[] = {0xA5,0x5A};
+uint8_t pc_tail[] = {};
 
 uint8_t dds_head[] = {};
 uint8_t dds_tail[] = {};
 
 /* Definition of temporary transit of computer communication data */
 PConectTypeDef PConnect;
-
-CmdTypeDef Cmd;
+CmdSlectTypeDef Cmd;
 SendSlectTypeDef SendSlect;
 CheckSlectTypeDef CheckSlect;
 /************************************************** General communication protocol **************************************************/
@@ -57,7 +56,7 @@ void frame_send(SendSlectTypeDef SendSlect,CheckSlectTypeDef CheckSlect,uint8_t*
 							memcpy(&frame[j],(uint8_t*)&frame_check,ETHCRC32);
 							j = j + 4;	break;
 		case MODBUSCRC16:	frame_check = ModBusCRC16(tx_buffer,tx_num);
-							frame_check = CharReverse16((uint16_t)frame_check);
+//							frame_check = CharReverse16((uint16_t)frame_check);
 							memcpy(&frame[j],(uint8_t*)&frame_check,MODBUSCRC16);
 							j = j + 2;	break;
 		case CHECKSUM8: 	frame_check = CheckSum8(tx_buffer,tx_num);
@@ -76,7 +75,7 @@ void frame_send(SendSlectTypeDef SendSlect,CheckSlectTypeDef CheckSlect,uint8_t*
 	switch (SendSlect)
 	{
 		case UART: 	HAL_UART_Transmit(&URTSEND,&frame,frame_size, 0xFFFF);break;
-		case SPI: 	HAL_UART_Transmit(&SPISEND,&frame,frame_size, 0xFFFF);break;
+		case SPI: 	HAL_SPI_Transmit(&SPISEND,&frame,frame_size, 0xFFFF);break;
 		default:	break;
 	}
 }
@@ -123,25 +122,19 @@ int tail_verification(uint8_t* tail,uint8_t tail_size)
   * @param	Instructions and parameters must have one instruction, and parameters can be omitted.
   * @retval	Null
   */
-void Dacai_Send(CmdTypeDef command, ...)
+void Dacai_Send(CmdSlectTypeDef command, ...)
 {
     uint16_t Cmd, param;
     uint16_t count = 0,param_start = 0;
     va_list args;
 
-    /* Determine whether it is a double-byte instruction or a single-byte instruction */
-    if((command & 0xFF00) == 0xB100)
-    {
-    	Cmd = CharReverse16((uint16_t)command);
-    	memcpy(&tx_buffer[0], (uint8_t*)&Cmd, 2);		//It is recommended to determine that the instruction length is incomplete.
-        tx_num = 2;
-    	param_start = 2;
-    }else{
-    	Cmd = CharReverse16((uint16_t)command);
-    	memcpy(&tx_buffer[0], (uint8_t*)&Cmd, 1);
-        tx_num =  1;
-    	param_start = 1;
-    }
+    /* Double-byte instruction */
+
+    Cmd = CharReverse16((uint16_t)command);
+    memcpy(&tx_buffer[0], (uint8_t*)&Cmd, 2);
+    tx_num = 2;
+    param_start = 2;
+
 
     /* Read variable parameters */
     va_start(args, command);
@@ -167,7 +160,7 @@ void Dacai_Send(CmdTypeDef command, ...)
   * @param
   * @retval
   */
-void instruction_decode(void)
+void Daicai_Decode(void)
 {
 	char data_index = sizeof(dacai_head);
 	if(rx_buffer[data_index] == 0xB1)		//Receive the first data of the data segment
@@ -200,7 +193,7 @@ void instruction_decode(void)
   * @param	Null
   * @retval	Null
   */
-void PConectRceive(void)
+uint8_t PConectRceive(void)
 {
 	if(HEAD_VERIFICATION(pc_head))
 	{
@@ -214,8 +207,10 @@ void PConectRceive(void)
 			PConnect.crc16 = pstruct->crc16;
 
 			if(pstruct->addr < 12){PConnect.addr = 0;PConnect.addr_num = 12;}
+			return 1;
 		}
 	}
+	return 0;
 }
 
 
@@ -227,7 +222,7 @@ void PConectRceive(void)
   */
 void PConectSend(void)
 {
-	uint16_t i,crc16;
+	uint16_t i;
 
 	tx_buffer[0] = 0x81;
 	tx_buffer[1] = (PConnect.addr_num + 1+1+2+2);
@@ -253,8 +248,7 @@ void PConectSend(void)
   */
 void PConectProcess(void)
 {
-	if(rx_num == 0)return;
-	PConectRceive();
+	if(PConectRceive() != 1)return 0;
 	PConectSend();
 }
 
@@ -269,15 +263,12 @@ void PConectProcess(void)
   */
 void DDSend(uint8_t enable,uint32_t frequecy,uint8_t channel, float phase)
 {
-	uint16_t i;
-	uint8_t checksum;
+    uint32_t frequecy_out = (frequecy * 4294967296UL / 50000000UL);		//Frequency conversion
 
-    uint32_t frequecy_out = (frequecy * 4294967296UL / 50000000UL);
-
-	tx_buffer[0] = 0xA5;
-	tx_buffer[1] = 0x12 - enable;
+	tx_buffer[0] = 0xA5;			//Frame header
+	tx_buffer[1] = 0x12 - enable;	//DDS enable control
 	*(uint32_t*)&tx_buffer[2] = CharReverse32((uint32_t)frequecy_out);
-	tx_buffer[6] = channel * 16 + 1;
+	tx_buffer[6] = channel * 16 + 1;//Channel selection
 
 
 
@@ -291,12 +282,10 @@ void DDSend(uint8_t enable,uint32_t frequecy,uint8_t channel, float phase)
 
 	*(uint16_t*)&tx_buffer[7] = CharReverse16(phase);
 
-
 	tx_num = 1 + 1 + 4 + 1 + 2;
 
-    FRAME_SEND(UART,CHECKSUM8,dds_head, dds_tail);
+    FRAME_SEND(SPI,CHECKSUM8,dds_head, dds_tail);
 }
-
 
 
 

@@ -5,8 +5,9 @@
 ../Device/AT24C02.c:48:10:data_code	1
 ../Device/AT24C02.c:62:6:AT24Write	1
 ../Device/AT24C02.c:71:6:AT24Read	1
-../Device/AT24C02.c:81:6:write_fault_header	2
-../Device/AT24C02.c:95:6:read_fault_header	2
-../Device/AT24C02.c:104:6:write_fault_record	7
-../Device/AT24C02.c:140:9:read_fault_record	6
-../Device/AT24C02.c:170:6:BackupOverwrite	3
+../Device/AT24C02.c:80:6:init_fault_header	2
+../Device/AT24C02.c:98:6:read_fault_header	2
+../Device/AT24C02.c:107:6:write_fault_header	2
+../Device/AT24C02.c:123:6:write_fault_record	7
+../Device/AT24C02.c:163:9:read_fault_record	6
+../Device/AT24C02.c:194:6:BackupOverwrite	3
