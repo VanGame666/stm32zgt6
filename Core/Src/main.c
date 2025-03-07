@@ -148,23 +148,18 @@ int main(void)
 //	  HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_1);
 //	  HAL_Delay(200);
 //	  printf("dds test\r\n");
-
-
-	  DACAI_SEND(SwitchScreen,0);
 	  HAL_Delay(1000);
-	  DACAI_SEND(SwitchScreen,1);
+	  DDSend(1,1000000,6,150);
 	  HAL_Delay(1000);
-	  DACAI_SEND(SwitchScreen,2);
-	  HAL_Delay(1000);
-	  DACAI_SEND(SwitchScreen,3);
 
-//	  CMD_SEND(SwitchScreen,0);
+//	  DACAI_SEND(SwitchScreen,0);
 //	  HAL_Delay(1000);
-//	  CMD_SEND(SwitchScreen,1);
+//	  DACAI_SEND(SwitchScreen,1);
 //	  HAL_Delay(1000);
-//	  CMD_SEND(SwitchScreen,2);
+//	  DACAI_SEND(SwitchScreen,2);
 //	  HAL_Delay(1000);
-//	  CMD_SEND(SwitchScreen,3);
+//	  DACAI_SEND(SwitchScreen,3);
+
 
 
 	  if(uart_flag == 1)

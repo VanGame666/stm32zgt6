@@ -24,7 +24,7 @@ PConectTypeDef PConnect;
 
 CmdTypeDef Cmd;
 SendSlectTypeDef SendSlect;
-
+CheckSlectTypeDef CheckSlect;
 /************************************************** General communication protocol **************************************************/
 
 /**
@@ -32,29 +32,52 @@ SendSlectTypeDef SendSlect;
   * @param	Frame head and end of frame
   * @retval	Null
   */
-#define FRAME_SEND(SendSlect,head,tail) frame_send(SendSlect,head,tail,sizeof(head),sizeof(tail))
-void frame_send(SendSlectTypeDef SendSlect,uint8_t* head,uint8_t* tail,uint8_t head_size,uint8_t tail_size)
+#define FRAME_SEND(SendSlect,CheckSlect,head,tail) frame_send(SendSlect,CheckSlect,head,tail,sizeof(head),sizeof(tail))
+void frame_send(SendSlectTypeDef SendSlect,CheckSlectTypeDef CheckSlect,uint8_t* head,uint8_t* tail,uint8_t head_size,uint8_t tail_size)
 {
-	uint8_t frame_size = head_size + tail_size + tx_num;
-	uint8_t frame[frame_size];
-	uint8_t i,j = 0;
+	uint32_t 	frame_check;
+	uint8_t 	frame_size = head_size + tx_num + CheckSlect + tail_size;
+	uint8_t 	frame[frame_size];
+	uint8_t 	i,j = 0;
+
+	/* Add a frame header */
 	for(i = 0;i < head_size;i++,j++)
 	{
 		frame[j] = head[i];
 	}
+	/* Fill in send data */
 	for(i = 0;i < tx_num;i++,j++)
 	{
 		frame[j] = tx_buffer[i];
 	}
+	/* Add verification code */
+	switch (CheckSlect)
+	{
+		case ETHCRC32: 		frame_check = EthCRC32(tx_buffer,tx_num);
+							memcpy(&frame[j],(uint8_t*)&frame_check,ETHCRC32);
+							j = j + 4;	break;
+		case MODBUSCRC16:	frame_check = ModBusCRC16(tx_buffer,tx_num);
+							frame_check = CharReverse16((uint16_t)frame_check);
+							memcpy(&frame[j],(uint8_t*)&frame_check,MODBUSCRC16);
+							j = j + 2;	break;
+		case CHECKSUM8: 	frame_check = CheckSum8(tx_buffer,tx_num);
+							memcpy(&frame[j],(uint8_t*)&frame_check,CHECKSUM8);
+							j = j + 1;	break;
+		default:			break;
+	}
+
+	/* Add end of frame */
 	for(i = 0;i < tail_size;i++,j++)
 	{
 		frame[j] = tail[i];
 	}
+
+	/* Select the send link channel */
 	switch (SendSlect)
 	{
-		case UART: HAL_UART_Transmit(&URTSEND,&frame,frame_size, 0xFFFF);break;
-		case SPI: HAL_UART_Transmit(&SPISEND,&frame,frame_size, 0xFFFF);break;
-		defalt :break;
+		case UART: 	HAL_UART_Transmit(&URTSEND,&frame,frame_size, 0xFFFF);break;
+		case SPI: 	HAL_UART_Transmit(&SPISEND,&frame,frame_size, 0xFFFF);break;
+		default:	break;
 	}
 }
 
@@ -102,7 +125,7 @@ int tail_verification(uint8_t* tail,uint8_t tail_size)
   */
 void Dacai_Send(CmdTypeDef command, ...)
 {
-    uint16_t Cmd, param, crc16;
+    uint16_t Cmd, param;
     uint16_t count = 0,param_start = 0;
     va_list args;
 
@@ -111,12 +134,12 @@ void Dacai_Send(CmdTypeDef command, ...)
     {
     	Cmd = CharReverse16((uint16_t)command);
     	memcpy(&tx_buffer[0], (uint8_t*)&Cmd, 2);		//It is recommended to determine that the instruction length is incomplete.
-        tx_num = sizeof(crc16) + 2;
+        tx_num = 2;
     	param_start = 2;
     }else{
     	Cmd = CharReverse16((uint16_t)command);
     	memcpy(&tx_buffer[0], (uint8_t*)&Cmd, 1);
-        tx_num = sizeof(crc16) + 1;
+        tx_num =  1;
     	param_start = 1;
     }
 
@@ -134,13 +157,8 @@ void Dacai_Send(CmdTypeDef command, ...)
     }
     va_end(args);
 
-    /* Add CRC verification code */
-    crc16 = ModBusCRC16(tx_buffer, tx_num - sizeof(crc16));
-   	crc16 = CharReverse16(crc16);//The Dacai screen transmission is a big-end transmission, so it should be converted to a big-end mode
-    memcpy(&tx_buffer[tx_num - sizeof(crc16)], (uint8_t*)&crc16, sizeof(crc16));
-
     /* Frame sending */
-    FRAME_SEND(UART,dacai_head, dacai_tail);
+    FRAME_SEND(UART,MODBUSCRC16,dacai_head, dacai_tail);
 }
 
 
@@ -223,11 +241,8 @@ void PConectSend(void)
 		AT24Read(PConnect.addr+i,&tx_buffer[4],i);
 	}
 
-	tx_num = tx_buffer[1];
-	crc16 = ModBusCRC16(tx_buffer,tx_num-sizeof(crc16));
-	memcpy(&tx_buffer[tx_num-sizeof(crc16)],(uint8_t*)&crc16,sizeof(crc16));
-
-	FRAME_SEND(UART,pc_head,pc_tail);
+	tx_num = tx_buffer[1]-2;
+	FRAME_SEND(UART,MODBUSCRC16,pc_head,pc_tail);
 }
 
 
@@ -277,16 +292,9 @@ void DDSend(uint8_t enable,uint32_t frequecy,uint8_t channel, float phase)
 	*(uint16_t*)&tx_buffer[7] = CharReverse16(phase);
 
 
-	tx_num = 1 + 1 + 4 + 1 + 2 + 1;
-	checksum = CheckSum8(tx_buffer,tx_num-sizeof(checksum));
-	memcpy(&tx_buffer[tx_num-sizeof(checksum)],(uint8_t*)&checksum,sizeof(checksum));
+	tx_num = 1 + 1 + 4 + 1 + 2;
 
-	for(i = 0;i < tx_num;i++)
-	{
-		printf("0x%2x \r\n",tx_buffer[i]);
-	}
-
-	FRAME_SEND(SPI,dds_head,dds_tail);
+    FRAME_SEND(UART,CHECKSUM8,dds_head, dds_tail);
 }
 
 

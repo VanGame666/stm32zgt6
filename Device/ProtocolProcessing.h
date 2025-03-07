@@ -10,8 +10,10 @@
 #include "SoftwareCRC.h"
 
 #define BUF_SIZE 128
+
 #define DACAI_SEND(command, ...) Dacai_Send(command,##__VA_ARGS__, 0xFFFF)
-#define URTSEND huart6
+
+#define URTSEND huart1
 #define SPISEND hspi2
 
 
@@ -39,6 +41,7 @@ typedef enum{
 }CmdTypeDef;
 extern CmdTypeDef Cmd;
 
+/* Send link selection */
 typedef enum{
 	UART,
 	SPI,
@@ -46,9 +49,18 @@ typedef enum{
 }SendSlectTypeDef;
 extern SendSlectTypeDef SendSlect;
 
+/* Check method selection */
+typedef enum{
+	CHECKSUM8 = 1,
+	MODBUSCRC16 = 2,
+	ETHCRC32 = 4,
+}CheckSlectTypeDef;
+extern CheckSlectTypeDef CheckSlect;
+
+
+
 void instruction_decode(void);
 void instruction_code(void);
-
 
 
 extern void DacaiSend(uint16_t command, ...);
