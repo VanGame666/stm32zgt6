@@ -17,6 +17,7 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
+#include <SoftwareCheck.h>
 #include "main.h"
 #include "dma.h"
 #include "i2c.h"
@@ -28,7 +29,6 @@
 /* USER CODE BEGIN Includes */
 #include "Protocolprocessing.h"
 #include "AT24C02.h"
-#include "SoftwareCRC.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -131,7 +131,7 @@ int main(void)
 
 
   	HAL_GPIO_WritePin(I2C1_CS_GPIO_Port,I2C1_CS_Pin,GPIO_PIN_SET);
-  	write_fault_header(&FaultHeader);
+  	write_fault_header();
 
 
   	HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_SET);

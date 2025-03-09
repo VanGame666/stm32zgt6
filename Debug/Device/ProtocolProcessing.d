@@ -29,7 +29,7 @@ Device/ProtocolProcessing.o: ../Device/ProtocolProcessing.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../Core/Inc/spi.h ../Device/SoftwareCRC.h
+ ../Core/Inc/spi.h E:/工作/STM32F407ZGT6_My/Device/SoftwareCheck.h
 ../Device/Protocolprocessing.h:
 ../Core/Inc/usart.h:
 ../Core/Inc/main.h:
@@ -63,4 +63,4 @@ Device/ProtocolProcessing.o: ../Device/ProtocolProcessing.c \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 ../Core/Inc/spi.h:
-../Device/SoftwareCRC.h:
+E:/工作/STM32F407ZGT6_My/Device/SoftwareCheck.h:

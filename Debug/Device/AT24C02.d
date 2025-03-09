@@ -29,7 +29,7 @@ Device/AT24C02.o: ../Device/AT24C02.c ../Device/AT24C02.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../Device/SoftwareCRC.h
+ E:/工作/STM32F407ZGT6_My/Device/SoftwareCheck.h
 ../Device/AT24C02.h:
 ../Core/Inc/i2c.h:
 ../Core/Inc/main.h:
@@ -62,4 +62,4 @@ Device/AT24C02.o: ../Device/AT24C02.c ../Device/AT24C02.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
-../Device/SoftwareCRC.h:
+E:/工作/STM32F407ZGT6_My/Device/SoftwareCheck.h:

@@ -9,7 +9,7 @@
 /*! -------------------------------------------------------------------------- */
 /*! Include headers */
 #include "i2c.h"
-#include "SoftwareCRC.h"
+#include <SoftwareCheck.h>
 
 /*! -------------------------------------------------------------------------- */
 /*! Public test functions prototype */
@@ -70,7 +70,7 @@ typedef struct{  //32bytes
 extern FaultHeaderTypeDef FaultHeader;
 extern FaultRecordTypeDef FaultRecord;
 
-extern void write_fault_header(FaultHeaderTypeDef* header);
+extern void write_fault_header(void);
 extern uint16_t time_code(uint8_t hour,uint8_t min);
 extern uint16_t data_code(uint8_t year,uint8_t month,uint8_t day);
 

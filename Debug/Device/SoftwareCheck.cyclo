@@ -1,0 +1,7 @@
+../Device/SoftwareCheck.c:7:10:BitReverse32	2
+../Device/SoftwareCheck.c:22:10:BitReverse16	2
+../Device/SoftwareCheck.c:37:10:CharReverse32	1
+../Device/SoftwareCheck.c:46:10:CharReverse16	1
+../Device/SoftwareCheck.c:55:10:EthCRC32	4
+../Device/SoftwareCheck.c:83:10:ModBusCRC16	4
+../Device/SoftwareCheck.c:112:9:CheckSum8	2

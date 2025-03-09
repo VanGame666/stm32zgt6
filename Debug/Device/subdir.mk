@@ -7,17 +7,17 @@
 C_SRCS += \
 ../Device/AT24C02.c \
 ../Device/ProtocolProcessing.c \
-../Device/SoftwareCRC.c 
+../Device/SoftwareCheck.c 
 
 OBJS += \
 ./Device/AT24C02.o \
 ./Device/ProtocolProcessing.o \
-./Device/SoftwareCRC.o 
+./Device/SoftwareCheck.o 
 
 C_DEPS += \
 ./Device/AT24C02.d \
 ./Device/ProtocolProcessing.d \
-./Device/SoftwareCRC.d 
+./Device/SoftwareCheck.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -27,7 +27,7 @@ Device/%.o Device/%.su Device/%.cyclo: ../Device/%.c Device/subdir.mk
 clean: clean-Device
 
 clean-Device:
-	-$(RM) ./Device/AT24C02.cyclo ./Device/AT24C02.d ./Device/AT24C02.o ./Device/AT24C02.su ./Device/ProtocolProcessing.cyclo ./Device/ProtocolProcessing.d ./Device/ProtocolProcessing.o ./Device/ProtocolProcessing.su ./Device/SoftwareCRC.cyclo ./Device/SoftwareCRC.d ./Device/SoftwareCRC.o ./Device/SoftwareCRC.su
+	-$(RM) ./Device/AT24C02.cyclo ./Device/AT24C02.d ./Device/AT24C02.o ./Device/AT24C02.su ./Device/ProtocolProcessing.cyclo ./Device/ProtocolProcessing.d ./Device/ProtocolProcessing.o ./Device/ProtocolProcessing.su ./Device/SoftwareCheck.cyclo ./Device/SoftwareCheck.d ./Device/SoftwareCheck.o ./Device/SoftwareCheck.su
 
 .PHONY: clean-Device
 

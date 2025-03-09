@@ -1,5 +1,9 @@
-#include "SoftwareCRC.h"
-
+#include <SoftwareCheck.h>
+/**
+  * @brief	Null
+  * @param	Null
+  * @retval	Null
+  */
 uint32_t BitReverse32(uint32_t data)
 {
 	uint32_t revers = 0;
@@ -10,7 +14,11 @@ uint32_t BitReverse32(uint32_t data)
     }
     return revers;
 }
-
+/**
+  * @brief	Null
+  * @param	Null
+  * @retval	Null
+  */
 uint16_t BitReverse16(uint16_t data)
 {
 	uint16_t revers = 0;
@@ -21,17 +29,29 @@ uint16_t BitReverse16(uint16_t data)
     }
     return revers;
 }
-
+/**
+  * @brief	Null
+  * @param	Null
+  * @retval	Null
+  */
 uint32_t CharReverse32 (uint32_t data)
 {
 	return ((data & 0x000000ff) << 24 | (data & 0x0000ff00) << 8 | (data & 0x00ff0000) >> 8 | (data & 0xff000000) >> 24);
 }
-
+/**
+  * @brief	Null
+  * @param	Null
+  * @retval	Null
+  */
 uint16_t CharReverse16 (uint16_t data)
 {
 	return (data & 0x00ff) << 8 | (data & 0xff00) >> 8;
 }
-
+/**
+  * @brief	Null
+  * @param	Null
+  * @retval	Null
+  */
 uint32_t EthCRC32(uint8_t* data, uint16_t len)
 {
 	uint32_t CRC32 = 0xFFFFFFFF;
@@ -55,8 +75,12 @@ uint32_t EthCRC32(uint8_t* data, uint16_t len)
   return CRC32 ^ 0xFFFFFFFF;
 }
 
-
-uint16_t ModBusCRC16(uint8_t *data, uint16_t len)
+/**
+  * @brief	Null
+  * @param	Null
+  * @retval	Null
+  */
+uint16_t ModBusCRC16(uint8_t* data, uint16_t len)
 {
     uint16_t CRC16 = 0xFFFF;
     uint16_t POLY = BitReverse16(0x8005);
@@ -80,8 +104,12 @@ uint16_t ModBusCRC16(uint8_t *data, uint16_t len)
     return CRC16;
 }
 
-
-uint8_t CheckSum8(uint8_t *data, uint16_t len)
+/**
+  * @brief	Null
+  * @param	Null
+  * @retval	Null
+  */
+uint8_t CheckSum8(uint8_t* data, uint16_t len)
 {
     uint32_t SUM = 0;
 

@@ -1,3 +1,4 @@
+
 #ifndef __ProtocolProcessing_H
 #define __ProtocolProcessing_H
 
@@ -7,14 +8,19 @@
 
 #include "usart.h"
 #include "spi.h"
-#include "SoftwareCRC.h"
+#include <SoftwareCheck.h>
 
 #define BUF_SIZE 128
 
-#define DACAI_SEND(command, ...) Dacai_Send(command,##__VA_ARGS__, 0xFFFF)
+
+#define HEAD_VERIFICATION(head) head_verification(head,sizeof(head))
+#define TIAL_VERIFICATION(tail) tail_verification(tail,sizeof(tail))
+#define FRAME_SEND(SendSlect,CheckSlect,head,tail) frame_send(SendSlect,CheckSlect,head,tail,sizeof(head),sizeof(tail))
 
 #define URTSEND huart1
 #define SPISEND hspi2
+
+#define DACAI_SEND(command, ...) Dacai_Send(command,##__VA_ARGS__, 0xFFFF)
 
 
 extern uint8_t rx_buffer[BUF_SIZE];
@@ -31,7 +37,6 @@ typedef struct{
 	uint16_t addr_num;
 	uint16_t crc16;
 }PConectTypeDef;
-extern PConectTypeDef PConect;
 
 /* Dacai screen control command */
 typedef enum{
@@ -39,7 +44,7 @@ typedef enum{
 	 SetButtonStatus = 0xB110,
 	 SwitchScreen = 0xB100,
 }CmdSlectTypeDef;
-extern CmdSlectTypeDef Cmd;
+
 
 /* Send link selection */
 typedef enum{
@@ -47,16 +52,20 @@ typedef enum{
 	SPI,
 	IIC
 }SendSlectTypeDef;
-extern SendSlectTypeDef SendSlect;
 
 /* Check method selection */
 typedef enum{
+	NOCHECK = 0,
 	CHECKSUM8 = 1,
 	MODBUSCRC16 = 2,
 	ETHCRC32 = 4,
 }CheckSlectTypeDef;
-extern CheckSlectTypeDef CheckSlect;
 
+
+extern CheckSlectTypeDef CheckSlect;
+extern SendSlectTypeDef SendSlect;
+extern CmdSlectTypeDef Cmd;
+extern PConectTypeDef PConect;
 
 
 void Daicai_Decode(void);

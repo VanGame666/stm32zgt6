@@ -16,7 +16,7 @@ uint8_t dacai_tail[] = {0xFF,0xFC,0xFF,0xFF};
 uint8_t pc_head[] = {0x5A,0xA5};
 uint8_t pc_tail[] = {};
 
-uint8_t dds_head[] = {};
+uint8_t dds_head[] = {};//The frame header needs to be added when checking the dds data frame, so the frame header is placed in the data segment
 uint8_t dds_tail[] = {};
 
 /* Definition of temporary transit of computer communication data */
@@ -27,12 +27,16 @@ CheckSlectTypeDef CheckSlect;
 /************************************************** General communication protocol **************************************************/
 
 /**
-  * @brief	Data protocol header and tail encapsulation sends
-  * @param	Frame head and end of frame
+  * @brief	Null
+  * @param	Null
   * @retval	Null
   */
-#define FRAME_SEND(SendSlect,CheckSlect,head,tail) frame_send(SendSlect,CheckSlect,head,tail,sizeof(head),sizeof(tail))
-void frame_send(SendSlectTypeDef SendSlect,CheckSlectTypeDef CheckSlect,uint8_t* head,uint8_t* tail,uint8_t head_size,uint8_t tail_size)
+void frame_send(SendSlectTypeDef SendSlect,		//Send channel selection
+				CheckSlectTypeDef CheckSlect,	//Check method selection
+				uint8_t* head,					//Frame header array data
+				uint8_t* tail,					//Frame tail array data
+				uint8_t head_size,
+				uint8_t tail_size)
 {
 	uint32_t 	frame_check;
 	uint8_t 	frame_size = head_size + tx_num + CheckSlect + tail_size;
@@ -52,18 +56,19 @@ void frame_send(SendSlectTypeDef SendSlect,CheckSlectTypeDef CheckSlect,uint8_t*
 	/* Add verification code */
 	switch (CheckSlect)
 	{
-		case ETHCRC32: 		frame_check = EthCRC32(tx_buffer,tx_num);
-							memcpy(&frame[j],(uint8_t*)&frame_check,ETHCRC32);
-							j = j + 4;	break;
-		case MODBUSCRC16:	frame_check = ModBusCRC16(tx_buffer,tx_num);
-//							frame_check = CharReverse16((uint16_t)frame_check);
-							memcpy(&frame[j],(uint8_t*)&frame_check,MODBUSCRC16);
-							j = j + 2;	break;
-		case CHECKSUM8: 	frame_check = CheckSum8(tx_buffer,tx_num);
-							memcpy(&frame[j],(uint8_t*)&frame_check,CHECKSUM8);
-							j = j + 1;	break;
+		case ETHCRC32: 		frame_check = EthCRC32(tx_buffer,tx_num);break;
+
+		case MODBUSCRC16:	frame_check = ModBusCRC16(tx_buffer,tx_num);break;
+
+		case CHECKSUM8: 	frame_check = CheckSum8(tx_buffer,tx_num);break;
+
 		default:			break;
 	}
+
+//	frame_check = CharReverse16((uint16_t)frame_check);
+	memcpy(&frame[j],(uint8_t*)&frame_check,CheckSlect);
+	j = j + CheckSlect;
+
 
 	/* Add end of frame */
 	for(i = 0;i < tail_size;i++,j++)
@@ -87,7 +92,6 @@ void frame_send(SendSlectTypeDef SendSlect,CheckSlectTypeDef CheckSlect,uint8_t*
   * @param	Frame header
   * @retval Verify that it was successful
   */
-# define HEAD_VERIFICATION(head) head_verification(head,sizeof(head))
 int head_verification(uint8_t* head,uint8_t head_size)
 {
 	for(int i = 0;i < head_size;i++)
@@ -103,7 +107,6 @@ int head_verification(uint8_t* head,uint8_t head_size)
   * @param	Frame tail
   * @retval	Verify that it was successful
   */
-# define TIAL_VERIFICATION(tail) tail_verification(tail,sizeof(tail))
 int tail_verification(uint8_t* tail,uint8_t tail_size)
 {
 	for(int i = 0;i < tail_size;i++)
@@ -129,7 +132,6 @@ void Dacai_Send(CmdSlectTypeDef command, ...)
     va_list args;
 
     /* Double-byte instruction */
-
     Cmd = CharReverse16((uint16_t)command);
     memcpy(&tx_buffer[0], (uint8_t*)&Cmd, 2);
     tx_num = 2;
@@ -156,9 +158,9 @@ void Dacai_Send(CmdSlectTypeDef command, ...)
 
 
 /**
-  * @brief
-  * @param
-  * @retval
+  * @brief	Null
+  * @param	Null
+  * @retval	Null
   */
 void Daicai_Decode(void)
 {
@@ -233,7 +235,7 @@ void PConectSend(void)
 
 	for(i = 0;i < PConnect.addr_num;i++)
 	{
-		AT24Read(PConnect.addr+i,&tx_buffer[4],i);
+		AT24Read(PConnect.addr+i,&tx_buffer[4]+i);
 	}
 
 	tx_num = tx_buffer[1]-2;
@@ -266,21 +268,26 @@ void DDSend(uint8_t enable,uint32_t frequecy,uint8_t channel, float phase)
     uint32_t frequecy_out = (frequecy * 4294967296UL / 50000000UL);		//Frequency conversion
 
 	tx_buffer[0] = 0xA5;			//Frame header
-	tx_buffer[1] = 0x12 - enable;	//DDS enable control
+	tx_buffer[1] = 0x12 - enable;	//DDS enable control	1:enable	0:disable
 	*(uint32_t*)&tx_buffer[2] = CharReverse32((uint32_t)frequecy_out);
 	tx_buffer[6] = channel * 16 + 1;//Channel selection
 
 
 
-
-    if((int16_t)phase == phase)//Warning: Negative phase is not considered, and optimization is required in the future
+	/* If it is an integer, not a floating point number */
+	if((int16_t)phase == phase)
     {
-        phase = ((int16_t)phase)*2;
+        phase = ((int16_t)phase)*2;//If it is an integer, phase multiply two and send it directly
     }else{
-        phase = ((int16_t)phase)*2 + 1;
+    	if(phase > 0)
+    	{
+        	phase = ((int16_t)phase)*2 + 1;//If it is not an integer, multiply the phase by two and add 1 means 0.5 phase to send
+    	}else if(phase < 0){
+    		phase = ((int16_t)phase)*2 - 1;
+    	}
     }
 
-	*(uint16_t*)&tx_buffer[7] = CharReverse16(phase);
+	*(uint16_t*)&tx_buffer[7] = CharReverse16(phase);//High byte first send
 
 	tx_num = 1 + 1 + 4 + 1 + 2;
 
